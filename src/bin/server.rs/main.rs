@@ -1,5 +1,6 @@
 pub mod connection;
 pub mod group_table;
+pub mod group;
 fn main() -> ChatResult<()> {
     let address = std::env::args().nth(1).expect(
         "Usage: server
