@@ -50,19 +50,21 @@ git remote add upstream https://github.com/original-owner/async-chat-app.git
 
 Use descriptive branch names prefixed with:
 
-  - feature/ for new features
+  - feature/issue-1-local-chat
 
-  - bugfix/ for bug fixes
+  - bugfix/issue-3-linting-workflow
 
-  - docs/ for documentation changes
+  - docs/issue-7-contribution-guidelines
 
-  - refactor/ for code refactoring
+  - refactor/ issue-number-changes
 
-  - test/ for test-related changes
+  - test/issue-number-changes
 
 ## Commit Messages
 
   - Follow Conventional Commits style
+  
+  - Feat(user): integrate user management into server connection handling
 
   - Use the present tense ("Add feature" not "Added feature")
 
