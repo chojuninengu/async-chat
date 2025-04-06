@@ -33,7 +33,7 @@ Async Chat is a robust chat system that allows multiple clients to communicate w
 
 ## Installation
 
-1. Clone the repository using any of the methods below:
+Clone the repository using any of the methods below:
 
 - **Using SSH (recommended for developers):**
 ```bash
@@ -43,11 +43,6 @@ git clone git@github.com:Rust-Cameroon/async-chat.git
 - **Using HTTPS (easier for beginners):**
 ```bash
 git clone https://github.com/Rust-Cameroon/async-chat.git
-```
-
-2. Build the project:
-```bash
-cargo build
 ```
 
 ## Usage
