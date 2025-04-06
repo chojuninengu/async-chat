@@ -6,6 +6,9 @@ A real-time asynchronous chat library built in Rust that enables WhatsApp-like g
 
 Async Chat is a robust chat system that allows multiple clients to communicate with each other through a central server. The system is built using Rust's async capabilities, providing efficient and scalable group-based communication.
 
+Below is a high-level overview of the system:
+![Async Rust Chat](docs/images/mvp.jpeg)
+
 ## Existing Features
 
 - Asynchronous communication using Rust's async/await
