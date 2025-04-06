@@ -6,15 +6,18 @@ A real-time asynchronous chat library built in Rust that enables WhatsApp-like g
 
 Async Chat is a robust chat system that allows multiple clients to communicate with each other through a central server. The system is built using Rust's async capabilities, providing efficient and scalable group-based communication.
 
-## Features
+## Existing Features
 
 - Asynchronous communication using Rust's async/await
 - Group-based chat system
 - Multiple client support
 - Real-time message delivery
-- Server-client architecture
+
+## Planned Features
+- Secure groups with passwords
 - Group creation and management
 - Secure message handling
+- WASM (WebAssembly) support
 
 ## Prerequisites
 
@@ -51,32 +54,21 @@ cargo build
 
 1. Start the server:
 ```bash
-cargo run --bin server
+cargo run --release --bin server -- localhost:8000
 ```
 
 2. Start a client:
 ```bash
-cargo run --bin client
+cargo run --release --bin client -- localhost:8000
 ```
 
 ### Basic Workflow
 
-1. Clients connect to the server
-2. Create a group on the server
-3. Join an existing group
+1. Start server
+2. Clients connect to the server
+3. Create and join a group on the server
 4. Start sending messages within the group
 
-## Project Structure
-
-```
-async-chat/
-├── src/
-│   ├── bin/         # Binary executables (server and client)
-│   ├── lib.rs       # Library core functionality
-│   └── utils.rs     # Utility functions
-├── Cargo.toml       # Project dependencies and configuration
-└── docs/           # Documentation
-```
 
 ## Contributing
 
