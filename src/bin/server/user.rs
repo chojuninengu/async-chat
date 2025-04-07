@@ -52,6 +52,7 @@ impl UserManager {
         Ok(())
     }
 
+    #[allow(dead_code)]
     pub async fn is_active(&self, username: &Arc<String>) -> bool {
         let active_users = self.active_users.lock().await;
         active_users.contains_key(username)
