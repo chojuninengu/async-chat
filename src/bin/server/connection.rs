@@ -23,16 +23,12 @@ impl Outbound {
 }
 
 pub struct Connection {
-    outbound: Arc<Outbound>,
     user: Option<User>,
 }
 
 impl Connection {
-    pub fn new(outbound: Arc<Outbound>) -> Self {
-        Connection {
-            outbound,
-            user: None,
-        }
+    pub fn new() -> Self {
+        Connection { user: None }
     }
 
     pub fn set_user(&mut self, user: User) {
@@ -54,7 +50,7 @@ pub async fn serve(
     user_manager: Arc<UserManager>,
 ) -> anyhow::Result<()> {
     let outbound = Arc::new(Outbound::new(socket.clone()));
-    let mut connection = Connection::new(outbound.clone());
+    let mut connection = Connection::new();
     let buffered = BufReader::new(socket);
     let mut from_client = utils::receive_as_json(buffered);
 
@@ -96,7 +92,7 @@ pub async fn serve(
                         .send(FromServer::Error("Not authenticated".to_string()))
                         .await
                 } else {
-                    let group = groups.get_or_create(group_name);
+                    let group = groups.get_or_create(group_name).await;
                     group.join(outbound.clone());
                     Ok(())
                 }
@@ -106,7 +102,7 @@ pub async fn serve(
                 message,
             } => {
                 if let Some(user) = connection.get_user() {
-                    match groups.get(&group_name) {
+                    match groups.get(&group_name).await {
                         Some(group) => {
                             group.post(message, user.clone());
                             Ok(())
