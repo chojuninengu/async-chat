@@ -1,3 +1,5 @@
+#![allow(dead_code)] // Suppresses warnings about unused code
+
 use crate::connection::Outbound;
 use async_chat::FromServer;
 use async_chat::User;
@@ -15,19 +17,32 @@ impl Group {
         let (sender, _receiver) = broadcast::channel(1000);
         Group { name, sender }
     }
+
     pub fn join(&self, outbound: Arc<Outbound>) {
         let receiver = self.sender.subscribe();
         task::spawn(handle_subscriber(self.name.clone(), receiver, outbound));
     }
+feature/interactive-chat
     pub fn post(&self, message: Arc<String>, sender: User) {
         let _ignored = self.sender.send((message, sender));
+
+
+    pub fn post(&self, message: Arc<String>) {
+        let _ = self.sender.send(message); // Ignoring the result to suppress warning
+ main
     }
 }
 
 async fn handle_subscriber(
+ feature/interactive-chat
     group_name: Arc<String>,
     mut receiver: broadcast::Receiver<(Arc<String>, User)>,
     outbound: Arc<Outbound>,
+
+    _group_name: Arc<String>,
+    _receiver: broadcast::Receiver<Arc<String>>,
+    _outbound: Arc<Outbound>,
+ main
 ) {
     while let Ok((message, sender)) = receiver.recv().await {
         let response = FromServer::Message {
