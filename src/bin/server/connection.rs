@@ -5,10 +5,10 @@ use async_chat::{FromClient, FromServer, User};
 use async_std::io::BufReader;
 use async_std::net::TcpStream;
 use async_std::prelude::*;
-use async_std::sync::Mutex;
 use async_std::sync::Arc;
+use async_std::sync::Mutex;
 
-pub struct Outbound(Mutex<TcpStream>); 
+pub struct Outbound(Mutex<TcpStream>);
 
 impl Outbound {
     pub fn new(to_client: TcpStream) -> Outbound {
@@ -61,24 +61,26 @@ pub async fn serve(
     while let Some(request_result) = from_client.next().await {
         let request = request_result?;
         let result = match request {
-            FromClient::Register { username, password: _ } => {
-                match user_manager.register(username.clone()).await {
-                    Ok(user) => {
-                        connection.set_user(user.clone());
-                        outbound.send(FromServer::AuthSuccess { user }).await
-                    }
-                    Err(e) => outbound.send(FromServer::AuthError(e.to_string())).await,
+            FromClient::Register {
+                username,
+                password: _,
+            } => match user_manager.register(username.clone()).await {
+                Ok(user) => {
+                    connection.set_user(user.clone());
+                    outbound.send(FromServer::AuthSuccess { user }).await
                 }
-            }
-            FromClient::Login { username, password: _ } => {
-                match user_manager.login(username.clone()).await {
-                    Ok(user) => {
-                        connection.set_user(user.clone());
-                        outbound.send(FromServer::AuthSuccess { user }).await
-                    }
-                    Err(e) => outbound.send(FromServer::AuthError(e.to_string())).await,
+                Err(e) => outbound.send(FromServer::AuthError(e.to_string())).await,
+            },
+            FromClient::Login {
+                username,
+                password: _,
+            } => match user_manager.login(username.clone()).await {
+                Ok(user) => {
+                    connection.set_user(user.clone());
+                    outbound.send(FromServer::AuthSuccess { user }).await
                 }
-            }
+                Err(e) => outbound.send(FromServer::AuthError(e.to_string())).await,
+            },
             FromClient::Logout => {
                 if let Some(user) = connection.get_user() {
                     if let Err(e) = user_manager.logout(user.username.clone()).await {
@@ -90,24 +92,38 @@ pub async fn serve(
             }
             FromClient::Join { group_name } => {
                 if connection.get_user().is_none() {
-                    outbound.send(FromServer::Error("Not authenticated".to_string())).await
+                    outbound
+                        .send(FromServer::Error("Not authenticated".to_string()))
+                        .await
                 } else {
                     let group = groups.get_or_create(group_name);
                     group.join(outbound.clone());
                     Ok(())
                 }
             }
-            FromClient::Post { group_name, message } => {
+            FromClient::Post {
+                group_name,
+                message,
+            } => {
                 if let Some(user) = connection.get_user() {
                     match groups.get(&group_name) {
                         Some(group) => {
-                            group.post(message);
+                            group.post(message, user.clone());
                             Ok(())
                         }
-                        None => outbound.send(FromServer::Error(format!("Group '{}' does not exist", group_name))).await,
+                        None => {
+                            outbound
+                                .send(FromServer::Error(format!(
+                                    "Group '{}' does not exist",
+                                    group_name
+                                )))
+                                .await
+                        }
                     }
                 } else {
-                    outbound.send(FromServer::Error("Not authenticated".to_string())).await
+                    outbound
+                        .send(FromServer::Error("Not authenticated".to_string()))
+                        .await
                 }
             }
         };
