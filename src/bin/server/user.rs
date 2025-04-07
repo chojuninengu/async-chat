@@ -1,12 +1,11 @@
 use async_chat::User;
-use async_std::sync::Mutex;
+use async_std::sync::{Arc, Mutex};
 use std::collections::HashMap;
-use std::sync::Arc;
 use uuid::Uuid;
 
 pub struct UserManager {
     users: Mutex<HashMap<Arc<String>, User>>,
-    active_users: Mutex<HashMap<Arc<String>, Arc<String>>>, // username -> session_id
+    active_users: Mutex<HashMap<Arc<String>, Arc<String>>>,
 }
 
 impl UserManager {
@@ -28,35 +27,33 @@ impl UserManager {
             id: Arc::new(Uuid::new_v4().to_string()),
         };
 
-        users.insert(username, user.clone());
+        users.insert(username.clone(), user.clone());
         Ok(user)
     }
 
     pub async fn login(&self, username: Arc<String>) -> anyhow::Result<User> {
         let users = self.users.lock().await;
-        let user = users.get(&username)
+        let user = users
+            .get(&username)
             .cloned()
             .ok_or_else(|| anyhow::anyhow!("User not found"))?;
 
         let mut active_users = self.active_users.lock().await;
         active_users.insert(username, user.id.clone());
-        
+
         Ok(user)
     }
 
     pub async fn logout(&self, username: Arc<String>) -> anyhow::Result<()> {
         let mut active_users = self.active_users.lock().await;
-        active_users.remove(&username);
+        active_users
+            .remove(&username)
+            .ok_or_else(|| anyhow::anyhow!("User not found"))?;
         Ok(())
     }
 
-    pub async fn get_user(&self, username: &Arc<String>) -> Option<User> {
-        let users = self.users.lock().await;
-        users.get(username).cloned()
-    }
-
-    pub async fn is_authenticated(&self, username: &Arc<String>) -> bool {
+    pub async fn is_active(&self, username: &Arc<String>) -> bool {
         let active_users = self.active_users.lock().await;
         active_users.contains_key(username)
     }
-} 
+}

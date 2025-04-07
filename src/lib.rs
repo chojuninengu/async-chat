@@ -3,14 +3,12 @@ use std::sync::Arc;
 use serde::{Deserialize, Serialize};
 pub mod utils;
 
-feature/interactive-chat
 #[derive(Debug, Clone, Hash, Eq, PartialEq, Serialize, Deserialize)]
 pub struct User {
     pub username: Arc<String>,
     pub id: Arc<String>,
 }
 
-main
 #[derive(Debug, Deserialize, Serialize, PartialEq)]
 pub enum FromClient {
     Join {

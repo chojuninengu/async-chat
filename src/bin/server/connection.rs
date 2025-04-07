@@ -7,14 +7,9 @@ use async_std::net::TcpStream;
 use async_std::prelude::*;
 use async_std::sync::Arc;
 use async_std::sync::Mutex;
- feature/interactive-chat
 
 pub struct Outbound(Mutex<TcpStream>);
 
-
-
-pub struct Outbound(Mutex<TcpStream>);
-main
 impl Outbound {
     pub fn new(to_client: TcpStream) -> Outbound {
         Outbound(Mutex::new(to_client))
