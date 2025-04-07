@@ -1,17 +1,15 @@
 pub mod connection;
 pub mod group;
- feature/interactive-chat
-pub mod user;
-
 pub mod group_table;
- main
-
-use connection::serve;
+pub mod user;
 
 use async_std::net::TcpListener;
 use async_std::prelude::*;
 use async_std::task;
+use connection::serve;
 use std::sync::Arc;
+
+use async_std::prelude::*;
 
 fn main() -> anyhow::Result<()> {
     let address = std::env::args().nth(1).expect(

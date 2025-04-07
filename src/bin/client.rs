@@ -1,4 +1,3 @@
-feature/interactive-chat
 use async_chat::{FromClient, FromServer, utils};
 use async_std::{io::BufReader, net, prelude::*, stream::StreamExt, task};
 use clap::{Parser, Subcommand};
@@ -43,19 +42,12 @@ enum Commands {
     },
 }
 
-#![allow(dead_code, unused_variables, unused_mut)] // Suppresses warnings
-
-use async_chat::{FromServer, utils};
-use async_std::{io::BufReader, net, prelude::FutureExt, stream::StreamExt, task};
-main
-
 fn main() -> anyhow::Result<()> {
     let cli = Cli::parse();
 
     task::block_on(async {
         let mut socket = net::TcpStream::connect(&cli.address).await?;
         socket.set_nodelay(true)?;
- feature/interactive-chat
 
         match cli.command {
             Commands::Chat { group, username } => {
@@ -83,16 +75,10 @@ fn main() -> anyhow::Result<()> {
                 from_server.race(to_server).await?;
             }
         }
-
-        let to_server = send_commands(socket.clone());
-        let from_server = handle_replies(socket);
-
-        from_server.race(to_server).await?;
- main
         Ok(())
     })
 }
- feature/interactive-chat
+
 async fn interactive_chat(
     mut socket: net::TcpStream,
     group: String,
@@ -151,11 +137,6 @@ async fn send_commands(mut to_server: net::TcpStream, command: Commands) -> anyh
     utils::send_as_json(&mut to_server, &command).await?;
     to_server.flush().await?;
     Ok(())
-
-async fn send_commands(_to_server: net::TcpStream) -> anyhow::Result<()> {
-    // TODO: Implement use clap to parse command line arguments and print help message
-    todo!()
- main
 }
 
 async fn handle_replies(from_server: net::TcpStream) -> anyhow::Result<()> {
