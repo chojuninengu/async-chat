@@ -1,41 +1,45 @@
-pub mod connection;
-pub mod group;
-pub mod group_table;
-pub mod user;
-
 use async_std::net::TcpListener;
-use async_std::prelude::*;
+use async_std::stream::StreamExt;
+use async_std::sync::Arc;
 use async_std::task;
-use connection::serve;
-use std::sync::Arc;
 
-use async_std::prelude::*;
+mod connection;
+mod group;
+mod group_table;
+mod user;
+
+use connection::serve;
+use group_table::GroupTable;
+use user::UserManager;
 
 fn main() -> anyhow::Result<()> {
-    let address = std::env::args().nth(1).expect(
-        "Usage: server
-    ADDRESS",
-    );
-    let chat_group_table = Arc::new(group_table::GroupTable::new());
-    let user_manager = Arc::new(user::UserManager::new());
+    let address = std::env::args()
+        .nth(1)
+        .unwrap_or_else(|| "127.0.0.1:8080".to_string());
+    task::block_on(async {
+        let listener = TcpListener::bind(&address).await?;
+        println!("Server listening on {}", address);
 
-    async_std::task::block_on(async {
-        let listener = TcpListener::bind(address).await?;
-        let mut new_connections = listener.incoming();
-        while let Some(socket_result) = new_connections.next().await {
-            let socket = socket_result?;
-            let groups = chat_group_table.clone();
-            let users = user_manager.clone();
-            task::spawn(async {
-                log_error(serve(socket, groups, users).await);
+        let groups = Arc::new(GroupTable::new());
+        let user_manager = Arc::new(UserManager::new());
+
+        let mut handles = vec![];
+        while let Some(stream) = listener.incoming().next().await {
+            let stream = stream?;
+            let groups = groups.clone();
+            let user_manager = user_manager.clone();
+
+            let handle = task::spawn(async move {
+                if let Err(e) = serve(stream, groups, user_manager).await {
+                    eprintln!("Error serving connection: {}", e);
+                }
             });
+            handles.push(handle);
+        }
+
+        for handle in handles {
+            handle.await;
         }
         Ok(())
     })
-}
-
-fn log_error(result: anyhow::Result<()>) {
-    if let Err(error) = result {
-        eprintln!("Error: {}", error);
-    }
 }
